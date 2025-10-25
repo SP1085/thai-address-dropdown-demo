@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Demo: Thai Address Resolution - Dev Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* (CSS styles are kept here for the demo's appearance) */
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f0f2f5;
+            padding: 40px 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        h2 {
+            color: #1877f2;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 400;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background-color: #fff;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23555'%3e%3cpath d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 12px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            border-color: #1877f2;
+            outline: none;
+        }
+
+        select:disabled {
+            background-color: #f9f9f9;
+            cursor: not-allowed;
+            color: #aaa;
+        }
+
+        #loading-status {
+            text-align: center;
+            color: #155724;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #d4edda;
+            border-radius: 6px;
+            display: none;
+        }
+
+        #result-display {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f7f9fc;
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+        }
+
+        #result-display h4 {
+            margin-top: 25px;
+            margin-bottom: 5px;
+            color: #0056b3;
+            font-weight: 600;
+            border-bottom: 2px solid #e0e6ed;
+            padding-bottom: 5px;
+        }
+
+        #result-display pre {
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-bottom: 10px;
+        }
+
+        .api-output pre {
+            background-color: #eef1f5;
+            color: #000;
+            font-weight: 500;
+        }
+
+        .api-section {
+            padding: 15px 0;
+        }
+
+        .api-usage-link {
+            text-align: center;
+            padding: 15px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>API Demo: Thai Address Resolution (Dev Sandbox)</h2>
+        <p style="text-align: center; color: #555;">เลือกระดับที่อยู่เพื่อจำลองผลลัพธ์ JSON และดูโครงสร้าง HTML</p>
+
+        <div id="loading-status">✅ โหลดข้อมูลเสร็จสมบูรณ์</div>
+
+        <div class="api-section">
+            <h4>โครงสร้าง HTML ที่ต้องใช้</h4>
+            <pre style="background-color: #f0f0f0; color: #4a4a4a; border: 1px solid #ddd;">
+&lt;!-- Dropdown Elements ที่ต้องมี ID ตามที่กำหนด --&gt;
+&lt;div class="form-group"&gt;
+    &lt;label for="province"&gt;จังหวัด:&lt;/label&gt;
+    &lt;select id="province"&gt;&lt;option value=""&gt;--&lt;/option&gt;&lt;/select&gt;
+&lt;/div&gt;
+&lt;div class="form-group"&gt;
+    &lt;label for="district"&gt;อำเภอ/เขต:&lt;/label&gt;
+    &lt;select id="district"&gt;&lt;option value=""&gt;--&lt;/option&gt;&lt;/select&gt;
+&lt;/div&gt;
+&lt;div class="form-group"&gt;
+    &lt;label for="subdistrict"&gt;ตำบล/แขวง:&lt;/label&gt;
+    &lt;select id="subdistrict"&gt;&lt;option value=""&gt;--&lt;/option&gt;&lt;/select&gt;
+&lt;/div&gt;
+
+&lt;!-- ช่องสำหรับใส่รหัสไปรษณีย์อัตโนมัติ --&gt;
+&lt;input type="text" id="postid_field" placeholder="รหัสไปรษณีย์" readonly&gt;
+            </pre>
+        </div>
+
+
+        <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="color: #0056b3; border-bottom: 1px solid #0056b3;">Try It Out: ทดลองเลือกเพื่อดูผลลัพธ์</h4>
+            <div class="form-group">
+                <label for="province">จังหวัด (Province):</label>
+                <select id="province" disabled>
+                    <option value="">กรุณารอโหลดข้อมูล...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="district">อำเภอ/เขต (District):</label>
+                <select id="district" disabled>
+                    <option value="">กรุณาเลือกจังหวัดก่อน</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="subdistrict">ตำบล/แขวง (Subdistrict):</label>
+                <select id="subdistrict" disabled>
+                    <option value="">กรุณาเลือกอำเภอ/เขตก่อน</option>
+                </select>
+            </div>
+
+            <input type="text" id="postid_field" placeholder="รหัสไปรษณีย์จะปรากฏที่นี่" readonly
+                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; background-color: #f5f5f5;">
+        </div>
+
+        <div id="result-display">
+            <p>กรุณาเลือกตำบล/แขวง เพื่อดูผลลัพธ์ JSON</p>
+        </div>
+
+        <div class="api-usage-link">
+            <p style="margin: 0;">
+                **หาโค้ด JavaScript ใช่ไหม?** 💡 <br>
+                โค้ดทั้งหมด (ตั้งแต่ Section 1 ถึง Section 4) อยู่ในไฟล์ **`README.md`** ของ Repository นี้!
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // โค้ดนี้ถูกย่อขนาดและตัดเหลือเฉพาะส่วนที่จำเป็นต่อการรัน DEMO และสร้าง JSON Output เท่านั้น
+
+        const PROVINCE_URL = 'https://raw.githubusercontent.com/kongvut/thai-province-data/master/api/latest/province.json';
+        const DISTRICT_URL = 'https://raw.githubusercontent.com/kongvut/thai-province-data/master/api/latest/district.json';
+        const SUBDISTRICT_URL = 'https://raw.githubusercontent.com/kongvut/thai-province-data/master/api/latest/sub_district.json';
+
+        const provinceSelect = document.getElementById('province');
+        const districtSelect = document.getElementById('district');
+        const subdistrictSelect = document.getElementById('subdistrict');
+        const postidField = document.getElementById('postid_field');
+        const resultDisplay = document.getElementById('result-display');
+        const loadingStatus = document.getElementById('loading-status');
+
+        let allProvinces = [];
+        let allDistricts = [];
+        let allSubdistricts = [];
+
+        async function fetchData(url) {
+            try {
+                const response = await fetch(url);
+                return response.ok ? await response.json() : null;
+            } catch (error) {
+                console.error('Fetch failed:', url, error);
+                return null;
+            }
+        }
+
+        function populateSelect(selectElement, data, defaultText) {
+            selectElement.innerHTML = `<option value="">${defaultText}</option>`;
+            if (Array.isArray(data) && data.length > 0) {
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name_th;
+                    selectElement.appendChild(option);
+                });
+                selectElement.disabled = false;
+            } else {
+                selectElement.disabled = true;
+            }
+        }
+
+        async function loadAllData() {
+            loadingStatus.style.display = 'block';
+            loadingStatus.textContent = 'กำลังโหลดข้อมูลที่อยู่...';
+
+            allProvinces = await fetchData(PROVINCE_URL);
+            allDistricts = await fetchData(DISTRICT_URL);
+            allSubdistricts = await fetchData(SUBDISTRICT_URL);
+
+            if (allProvinces) {
+                populateSelect(provinceSelect, allProvinces, '-- เลือกจังหวัด --');
+                loadingStatus.textContent = '✅ โหลดข้อมูลเสร็จสมบูรณ์';
+                setTimeout(() => { loadingStatus.style.display = 'none'; }, 2000);
+            }
+        }
+
+        // --- Event Listeners (Cascading Logic) ---
+        provinceSelect.addEventListener('change', () => {
+            const provinceId = parseInt(provinceSelect.value);
+            districtSelect.disabled = subdistrictSelect.disabled = true;
+            postidField.value = '';
+            resultDisplay.innerHTML = '<p>กรุณาเลือกตำบล/แขวง เพื่อดูผลลัพธ์ JSON</p>';
+            if (provinceId) {
+                const filteredDistricts = allDistricts.filter(d => d.province_id === provinceId);
+                populateSelect(districtSelect, filteredDistricts, '-- เลือกอำเภอ/เขต --');
+            }
+        });
+
+        districtSelect.addEventListener('change', () => {
+            const districtId = parseInt(districtSelect.value);
+            subdistrictSelect.disabled = true;
+            postidField.value = '';
+            resultDisplay.innerHTML = '<p>กรุณาเลือกตำบล/แขวง เพื่อดูผลลัพธ์ JSON</p>';
+            if (districtId) {
+                const filteredSubdistricts = allSubdistricts.filter(s => s.district_id === districtId);
+                populateSelect(subdistrictSelect, filteredSubdistricts, '-- เลือกตำบล/แขวง --');
+            }
+        });
+
+        subdistrictSelect.addEventListener('change', () => {
+            const subdistrictId = parseInt(subdistrictSelect.value);
+            resultDisplay.innerHTML = '<p>กำลังสร้างผลลัพธ์...</p>';
+
+            if (subdistrictId) {
+                const selectedProvince = allProvinces.find(p => p.id === parseInt(provinceSelect.value));
+                const selectedDistrict = allDistricts.find(d => d.id === parseInt(districtSelect.value));
+                const selectedSubdistrict = allSubdistricts.find(s => s.id === subdistrictId);
+
+                if (selectedSubdistrict) {
+                    const responseDataObject = {
+                        province: { id: selectedProvince.id, name_th: selectedProvince.name_th },
+                        district: { id: selectedDistrict.id, name_th: selectedDistrict.name_th },
+                        subdistrict: { id: selectedSubdistrict.id, name_th: selectedSubdistrict.name_th, postid: selectedSubdistrict.zip_code }
+                    };
+                    postidField.value = selectedSubdistrict.zip_code;
+
+                    resultDisplay.innerHTML = `
+                        <p style="font-weight: bold;">ที่อยู่ที่เลือก: ${selectedSubdistrict.name_th}, ${selectedDistrict.name_th}, ${selectedProvince.name_th}</p>
+                        <p style="font-weight: bold;">รหัสไปรษณีย์ที่ตั้งค่าอัตโนมัติ: ${selectedSubdistrict.zip_code}</p>
+                        <hr>
+                        <div class="api-section api-output">
+                            <h4>1. Response Body (JSON Output / ข้อมูลสำหรับบันทึก)</h4>
+                            <p style="font-size: 14px; color: #555;">นี่คือ Object ที่จะถูกบันทึก/ส่งกลับไป Server</p>
+                            <pre>${JSON.stringify(responseDataObject, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadAllData);
+    </script>
+
+</body>
+
+</html>
