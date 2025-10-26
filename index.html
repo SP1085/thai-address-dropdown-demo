@@ -71,6 +71,22 @@
             color: #aaa;
         }
 
+        /* *** UPDATED CSS for Postal Code Input *** This styles #postid_field to match the select dropdowns.
+        */
+        #postid_field {
+            width: 100%;
+            padding: 10px 15px; 
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px; 
+            font-family: 'Kanit', sans-serif;
+            background-color: #f5f5f5; /* Light grey for read-only status */
+            color: #333;
+            cursor: default;
+        }
+        /* *** END OF UPDATED CSS *** */
+
         #loading-status {
             text-align: center;
             color: #155724;
@@ -184,8 +200,7 @@
                 </select>
             </div>
 
-            <input type="text" id="postid_field" placeholder="รหัสไปรษณีย์จะปรากฏที่นี่" readonly
-                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; background-color: #f5f5f5;">
+            <input type="text" id="postid_field" placeholder="รหัสไปรษณีย์จะปรากฏที่นี่" readonly>
         </div>
 
         <div id="result-display">
